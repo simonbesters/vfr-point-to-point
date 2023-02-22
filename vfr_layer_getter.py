@@ -1,7 +1,6 @@
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-maxheight = 5000
 
 def getLayers(lat, lon):
     # Disable SSL certificate verification

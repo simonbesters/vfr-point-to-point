@@ -4,8 +4,9 @@ import vfr_layer_getter
 
 # starting and ending point and the distance in km between every datapoint
 A = (51.56667, 4.93333, 'EHGR')
-B = (52.72917, 6.51667, 'HOOGEVEEN')
-gap = 5
+# B = (52.72917, 6.51667, 'HOOGEVEEN')
+B = (51.363650, 6.218165, 'VENLO')
+gap = 20
 
 print(f"route from {A} to {B} with datapoint every {gap}km")
 
