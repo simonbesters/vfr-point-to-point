@@ -1,38 +1,53 @@
-import route
+import elevation
+import flightpath
 import airspace_plotter
-import vfr_layer_getter
+import vfr
+
+# locations to choose
+E = (51.56667, 4.93333, 'EHGR')
+H = (52.72917, 6.51667, 'HOOGEVEEN')
+V = (51.363650, 6.218165, 'VENLO')
+M = (51.12682342529297, 5.947177886962891, 'MONTFORT')
 
 # starting and ending point and the distance in km between every datapoint
-A = (51.56667, 4.93333, 'EHGR')
-# B = (52.72917, 6.51667, 'HOOGEVEEN')
-B = (51.363650, 6.218165, 'VENLO')
-gap = 20
+A = E
+B = H
+gap = 5
+
+# size of the graph
+graph_height = 2100
+
 
 print(f"route from {A} to {B} with datapoint every {gap}km")
 
 # getting the datapoints back in lat, lon for horizontal steps
-points = route.generate_route(A[0], A[1], B[0], B[1], gap)
+points = flightpath.generate_route_by_gap(A[0], A[1], B[0], B[1], gap)
 
 # counting the horizontal steps points for iterations
 steps = len(points)
 
 # getting the layer attributes per horizontal step
 layer_dict = {}
+ahn_dict = {}
 for i in range(steps):
-
+    distance = 0
     lat = points[f"step" + str(i + 1)]["lat"]
     lon = points[f"step" + str(i + 1)]["lon"]
-    # layer = vfr_layer_getter.getLayers(lat, lon)[i]["attributes"]
-    layer = vfr_layer_getter.getLayers(lat, lon)
+    layer = vfr.get_layers(lat, lon, distance)
+    ahn = elevation.convert_utm(lat, lon)
     for key in layer:
         layer[key]["x1"] = i * gap
         layer[key]["x2"] = i * gap + gap
     print(f"step {i} {layer}")
-    layer_dict[f"step{i+1}"] = layer
+    layer_dict[f"step{i + 1}"] = layer
+    ahn_dict[f"step{i + 1}"] = {
+        "x1": i * gap,
+        "x2": i * gap + gap,
+        "height": ahn,
+    }
 
-print(layer_dict)
 # do something to form a dictionary like airspace_types
-
+graph_width = steps * gap
 simon = {}
 for step in layer_dict:
     for key, value in layer_dict[step].items():
@@ -41,9 +56,5 @@ for step in layer_dict:
         else:
             simon[key]['x2'] = value['x2']
 
-print(simon)
-
-
 # get the plots for every airspace_layer and print them
-airspace_plotter.get_all_airspace_layers(simon)
-
+airspace_plotter.show_all_airspace_layers(simon, ahn_dict, graph_width, graph_height)
