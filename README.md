@@ -1,4 +1,4 @@
-Plot visual flight rules on map based on 2 GPS points or IGC-based flight track
+## Plot visual flight rules on map based on 2 GPS points or IGC-based flight track
 
 
 TODO/WIP:
@@ -19,7 +19,7 @@ Height. The distance is measured from the surface of the Earth. Also referred to
 'STD' 1013,2 = flight level
 The vertical distance is measured with a pressure altimeter set to the standard atmosphere.
 
-# Layers
+## Layers
 
 - Sea level = 0m, blue dotted straight
 - Ground level = AHN, land only? not objects? Black line, smooth (high detail)
