@@ -1,60 +1,35 @@
-import elevation
 import flightpath
 import airspace_plotter
-import vfr
+from variables import A, B, graph_height, gap
 
-# locations to choose
-E = (51.56667, 4.93333, 'EHGR')
-H = (52.72917, 6.51667, 'HOOGEVEEN')
-V = (51.363650, 6.218165, 'VENLO')
-M = (51.12682342529297, 5.947177886962891, 'MONTFORT')
+print(f"\nSTART: route from {A} to {B} with datapoint every {gap}km \n")
 
-# starting and ending point and the distance in km between every datapoint
-A = E
-B = H
-gap = 5
+# get airspace types
+print("1. start get_airspace_layers \n")
+airspace_layers, graph_width = flightpath.get_airspace_layers()
+print("2. finish get_airspace_layers \n")
 
-# size of the graph
-graph_height = 2100
+# get ground level elevation
+print("3. start get_ground_elevation \n")
+ground_level_elevation = flightpath.get_ground_elevation()
+print("4. finish get_ground_elevation \n")
 
+# construct graph
+print("5. start construct_graph \n")
+ax = airspace_plotter.construct_graph(graph_width, graph_height)
+print("6. finish construct_graph \n")
 
-print(f"route from {A} to {B} with datapoint every {gap}km")
+# draw ground level elevation
+print("7. start draw_ground_elevation \n")
+airspace_plotter.draw_ground_elevation(ground_level_elevation)
+print("8. finish draw_ground_elevation \n")
 
-# getting the datapoints back in lat, lon for horizontal steps
-points = flightpath.generate_route_by_gap(A[0], A[1], B[0], B[1], gap)
+# draw airspace layers
+print("9. start construct_airspace \n")
+airspace_plotter.construct_airspace(airspace_layers, ax)
+print("10. finish construct_airspace \n")
 
-# counting the horizontal steps points for iterations
-steps = len(points)
-
-# getting the layer attributes per horizontal step
-layer_dict = {}
-ahn_dict = {}
-for i in range(steps):
-    distance = 0
-    lat = points[f"step" + str(i + 1)]["lat"]
-    lon = points[f"step" + str(i + 1)]["lon"]
-    layer = vfr.get_layers(lat, lon, distance)
-    ahn = elevation.convert_utm(lat, lon)
-    for key in layer:
-        layer[key]["x1"] = i * gap
-        layer[key]["x2"] = i * gap + gap
-    print(f"step {i} {layer}")
-    layer_dict[f"step{i + 1}"] = layer
-    ahn_dict[f"step{i + 1}"] = {
-        "x1": i * gap,
-        "x2": i * gap + gap,
-        "height": ahn,
-    }
-
-# do something to form a dictionary like airspace_types
-graph_width = steps * gap
-simon = {}
-for step in layer_dict:
-    for key, value in layer_dict[step].items():
-        if key not in simon:
-            simon[key] = value
-        else:
-            simon[key]['x2'] = value['x2']
-
-# get the plots for every airspace_layer and print them
-airspace_plotter.show_all_airspace_layers(simon, ahn_dict, graph_width, graph_height)
+# show graph
+print("11. start show_graph \n")
+airspace_plotter.show_graph()
+print("12. finish show_graph \n")

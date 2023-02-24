@@ -3,23 +3,30 @@ import numpy as np
 from scipy.interpolate import make_interp_spline
 
 
-def show_all_airspace_layers(_airspace_types, ahn, graph_width, graph_height):
-    fig, ax = plt.subplots(figsize=(8, 6))
+def construct_graph(graph_width, graph_height):
+    fig, ax = plt.subplots()
+    ax.set_ylim([0, graph_height])
+    ax.set_xlim([0, 170])
+    # ax.legend()
+
+    return ax
+
+
+def show_graph():
+    plt.show()
+
+
+def construct_airspace(airspace_types, ax):
     colors = ['green', 'yellow', 'red', 'orange', 'blue', 'purple', 'black']
     colors_dict = {}
-    for i, (key, value) in enumerate(_airspace_types.items()):
-        x1, x2, ll, ul = value["x1"], value["x2"], value["ll"], value["ul"]
+    for i, (key, value) in enumerate(airspace_types.items()):
+        x1, x2, ll, ul = value["x1"], value["x2"], value["Lower Limit"], value["Upper Limit"]
         if key in colors_dict:
             color = colors_dict[key]
         else:
             color = colors[len(colors_dict) % len(colors)]
             colors_dict[key] = color
         draw_airspace_layer(ax, x1, x2, ll, ul, color, key)
-    draw_ground_elevation(ahn)
-    ax.set_ylim([0, 2500])
-    ax.set_xlim([0, 170])
-    ax.legend()
-    plt.show()
 
 
 def draw_airspace_layer(ax, x1, x2, ll, ul, color, label):
@@ -39,27 +46,22 @@ def draw_airspace_layer(ax, x1, x2, ll, ul, color, label):
     ax.text(x_center, y_center, label, ha='center', va='center', weight='bold', bbox=bbox_props)
 
 
-def draw_ground_elevation(ahn):
+def draw_ground_elevation(ahn_dict):
     # Extract x and y data from dictionary
     x_data = []
     y_data = []
-    for step in ahn.values():
+    previous_height = 0
+    for step in ahn_dict.values():
         x_data.append(step['x1'])
-        y_data.append(step['height'])
-
+        if step['height'] == 'none':
+            y_data.append(previous_height)
+        else:
+            y_data.append(step['height'])
+            previous_height = step['height']
     # Interpolate the data with a spline
     x_smooth = np.linspace(min(x_data), max(x_data), 300)
     y_spline = make_interp_spline(x_data, y_data)(x_smooth)
 
     # Plot the smoothed line
-    plt.plot(x_smooth, y_spline)
-
-    # Add axis labels and a title
-    plt.xlabel('Distance (m)')
-    plt.ylabel('Height (m)')
-    plt.title('Height profile')
-
-    # Show the plot
-    plt.show()
-
-
+    plt.plot(x_smooth, y_spline, color='orange')
+    plt.fill_between(x_smooth, [0], y_spline, facecolor='orange', alpha=0.5)

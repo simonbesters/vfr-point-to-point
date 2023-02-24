@@ -1,12 +1,10 @@
 import requests
 import requests.packages.urllib3.exceptions
 from urllib3.exceptions import InsecureRequestWarning
-
-fttom = 0.3048
-fltom = 100 * fttom
+from variables import feet_to_meters, flightlevel_to_meters
 
 
-def get_layers(lat, lon, distance):
+def get_layers(lat, lon):
     # Disable SSL certificate verification
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -36,48 +34,32 @@ def get_layers(lat, lon, distance):
 
     # Strip the data and put it every layer in airspaces
     layers = len(data["results"])
-    airspaces = {}
+    airspaces = []
     for i in range(layers):
         layer = data["results"][i]["attributes"]
-        ull = layer["UOM Lower Limit"]
-        uul = layer["UOM Upper Limit"]
-        rll = layer["Reference Lower Limit"]
-        rul = layer["Reference Upper Limit"]
-        if layer["Airspace Type"] == 'CLASS' and layer['Airspace Class'] == 'E':
-            if uul == 'FT':
-                ll = round(float(layer["Upper Limit"]) * fttom)
-            else:
-                ll = round(float(layer["Upper Limit"]) * fltom)
-            ul = ll
+        if layer["Airspace Type"] == 'CLASS' and layer["Airspace Class"] == 'E' or \
+                layer["Local Type Designator"] == 'PJA' or layer["Airspace Type"] == "TMA":
+            lower_limit_meters = round(
+                float(layer["Lower Limit"]) *
+                (feet_to_meters if layer["UOM Lower Limit"] == 'FT' else flightlevel_to_meters))
+            upper_limit_meters = round(
+                float(layer["Upper Limit"]) *
+                (feet_to_meters if layer["UOM Upper Limit"] == 'FT' else flightlevel_to_meters))
         else:
-            if layer["Local Type Designator"] == 'PJA':
-                if ull == 'FT':
-                    ll = round(float(layer["Lower Limit"]) * fttom)
-                else:
-                    ll = round(float(layer["Lower Limit"]) * fltom)
-                if uul == 'FT':
-                    ul = round(float(layer["Upper Limit"]) * fttom)
-                else:
-                    ul = round(float(layer["Upper Limit"]) * fltom)
-            else:
-                if layer["Airspace Type"] == "TMA":
-                    if ull == 'FT':
-                        ll = round(float(layer["Lower Limit"]) * fttom)
-                    else:
-                        ll = round(float(layer["Lower Limit"]) * fltom)
-                    if uul == 'FT':
-                        ul = round(float(layer["Upper Limit"]) * fttom)
-                    else:
-                        ul = round(float(layer["Upper Limit"]) * fltom)
-                else:
-                    continue
+            continue
 
-        airspaces[layer["Airspace Name"]] = {
-            "ll": ll,
-            "ul": ul,
-            "distance": distance,
-            "rll": rll,
-            "rul": rul,
+        new_layer = {
+            "Airspace Ident": layer["Airspace Ident"],
+            "Airspace Name": layer["Airspace Name"],
+            "Airspace Type": layer["Airspace Type"],
+            "Airspace Class": layer["Airspace Class"],
+            "Local Type Designator": layer["Local Type Designator"],
+            "Lower Limit": lower_limit_meters,
+            "Upper Limit": upper_limit_meters,
+            "Reference_ll": layer["Reference Lower Limit"],
+            "Reference_ul": layer["Reference Upper Limit"],
         }
+
+        airspaces.append(new_layer)
 
     return airspaces

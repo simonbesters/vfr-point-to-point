@@ -19,10 +19,8 @@ Height. The distance is measured from the surface of the Earth. Also referred to
 'STD' 1013,2 = flight level
 The vertical distance is measured with a pressure altimeter set to the standard atmosphere.
 
-## Layers
+## TODO Layers
 
-- Sea level = 0m, blue dotted straight
-- Ground level = AHN, land only? not objects? Black line, smooth (high detail)
 - Minimal height = AHN source, 150m above ground/water + Grey fill_between
 - Objects = api source needed, object height + 150m and 150m wide - red fill_between
 - City limits = api source needed, 300m above + 600m before and after

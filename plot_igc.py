@@ -19,7 +19,7 @@ for i in range(steps - 1):
     lat2 = lat[1 + i]
     lon2 = lon[1 + i]
     height2 = height[1 + i]
-    distance = flightpath.generate_route_by_distance(lat1, lon1, lat2, lon2)
+    distance = flightpath.calculate_distance(lat1, lon1, lat2, lon2)
     x3 = x2 + distance
     x2 = x3
 
